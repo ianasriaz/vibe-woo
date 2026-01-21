@@ -1,45 +1,47 @@
 <?php
-/**
- * The Template for displaying product archives, including the main shop page which is a post type archive
- *
- * @package Vibe_Woo
- */
 
 get_header( 'shop' );
 
-do_action( 'woocommerce_before_main_content' );
+?>
 
-if ( apply_filters( 'woocommerce_show_page_title', true ) ) {
-	?>
-	<h1 class="page-title"><?php woocommerce_page_title(); ?></h1>
-	<?php
-}
+<main id="primary" class="site-main py-12 md:py-20 px-4 md:px-6">
+	<div class="container mx-auto max-w-7xl">
+		<?php
+		/**
+		 * woocommerce_before_main_content hook.
+		 *
+		 * @hooked woocommerce_output_content_wrapper - 10 (outputs opening divs)
+		 * @hooked woocommerce_breadcrumb - 20
+		 * @hooked WC_Structured_Data::generate_website_schema() - 30
+		 */
+		do_action( 'woocommerce_before_main_content' );
+		?>
 
-do_action( 'woocommerce_archive_description' );
-
-if ( woocommerce_product_loop() ) {
-
-	do_action( 'woocommerce_before_shop_loop' );
-
-	woocommerce_product_loop_start();
-
-	if ( wc_get_loop_prop( 'total' ) ) {
-		while ( have_posts() ) {
-			the_post();
-
-			do_action( 'woocommerce_shop_loop' );
-
-			wc_get_template_part( 'content', 'product' );
+		<?php
+		if ( is_singular( 'product' ) ) {
+			wc_get_template_part( 'content', 'single-product' );
+		} elseif ( is_cart() ) {
+			woocommerce_content();
+		} elseif ( is_checkout() ) {
+			woocommerce_content();
+		} elseif ( is_account_page() ) {
+			woocommerce_content();
+		} else {
+			wc_get_template( 'archive-product.php' );
 		}
-	}
+		?>
 
-	woocommerce_product_loop_end();
+		<?php
+		/**
+		 * woocommerce_after_main_content hook.
+		 *
+		 * @hooked woocommerce_output_content_wrapper_end - 10 (outputs closing divs)
+		 */
+		do_action( 'woocommerce_after_main_content' );
+		?>
+	</div>
+</main>
 
-	do_action( 'woocommerce_after_shop_loop' );
-} else {
-	do_action( 'woocommerce_no_products_found' );
-}
-
-do_action( 'woocommerce_after_main_content' );
-
+<?php
 get_footer( 'shop' );
+
