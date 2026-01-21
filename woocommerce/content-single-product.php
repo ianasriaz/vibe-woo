@@ -85,7 +85,14 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
 
             <!-- Quantity & Add to Cart -->
             <div class="space-y-4 pt-6">
-                <?php woocommerce_template_single_add_to_cart(); ?>
+                <?php 
+                /**
+                 * Hook: woocommerce_after_add_to_cart_form.
+                 *
+                 * @hooked woocommerce_template_single_add_to_cart - 30
+                 */
+                woocommerce_template_single_add_to_cart();
+                ?>
 
                 <!-- Buy Now Button -->
                 <button type="button" class="w-full py-3 border-2 border-black bg-white text-black font-bold uppercase tracking-widest text-sm transition-all hover:bg-black hover:text-white" onclick="buyNow(<?php echo esc_attr( $product->get_id() ); ?>)">

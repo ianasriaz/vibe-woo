@@ -207,14 +207,98 @@ Text Domain: vibe-woo
 	padding: 0;
 }
 
-/* Hide radio inputs */
+/* Hide default select dropdowns */
+.variations select {
+	display: none !important;
+}
+
+/* Hide variation price/description */
+.woocommerce-variation-price,
+.woocommerce-variation-description {
+	display: none !important;
+}
+
+/* Style the variations table as flexbox */
+.variations {
+	display: block !important;
+	border-top: 1px solid #e5e7eb;
+	border-bottom: 1px solid #e5e7eb;
+	padding: 1.5rem 0;
+	margin: 1.5rem 0;
+}
+
+.variations tr {
+	display: flex !important;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	border: none !important;
+	background: transparent !important;
+}
+
+.variations tr:last-child {
+	margin-bottom: 0;
+}
+
+.variations td {
+	display: inline-block !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: none !important;
+}
+
+.variations td.label {
+	flex: 0 0 auto;
+	min-width: auto;
+}
+
+.variations td.label label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	margin: 0;
+	display: block;
+	margin-bottom: 0.5rem;
+}
+
+.variations td.value {
+	flex: 1 1 100%;
+	min-width: 100%;
+}
+
+/* Radio button styling */
 .variations input[type="radio"] {
 	display: none !important;
 }
 
-/* Swatch label styling */
 .variations label {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 1rem;
+	border: 2px solid #d1d5db;
+	background: #fff;
+	color: #000;
+	font-weight: 700;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	margin: 0 0.5rem 0.5rem 0;
+}
+
+.variations label:hover {
+	border-color: #333;
+}
+
+.variations input[type="radio"]:checked + label {
+	border-color: #000;
+	background: #000;
+	color: #fff;
 }
 
 .attribute-group label {
