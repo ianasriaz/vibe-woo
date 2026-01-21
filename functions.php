@@ -378,6 +378,41 @@ function vibe_woo_header_interactions() {
                 openCart();
             });
 
+            // Handle mini-cart remove button AJAX
+            jQuery(document.body).on('click', '.remove_from_cart_button', function(e) {
+                e.preventDefault();
+                
+                const $removeLink = jQuery(this);
+                const cartItemKey = $removeLink.data('cart_item_key');
+                const nonce = jQuery('input[name="woocommerce-cart-nonce"]').val();
+                
+                $removeLink.css('opacity', '0.5');
+                
+                jQuery.ajax({
+                    type: 'POST',
+                    url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'remove_from_cart'),
+                    data: {
+                        'cart_item_key': cartItemKey,
+                        'security': nonce
+                    },
+                    success: function(response) {
+                        if (response.fragments) {
+                            // Update mini-cart
+                            jQuery('#vibe-mini-cart-contents').replaceWith(response.fragments['#vibe-mini-cart-contents']);
+                            
+                            // Update cart count
+                            jQuery('.js-vibe-cart-count').replaceWith(response.fragments['.js-vibe-cart-count']);
+                            
+                            // Trigger WooCommerce event
+                            jQuery(document.body).trigger('removed_from_cart', [response.fragments, response.cart_hash]);
+                        }
+                    },
+                    error: function() {
+                        $removeLink.css('opacity', '1');
+                    }
+                });
+            });
+
             // Initialize WooCommerce variations on page load
             jQuery(document).ready(function($) {
                 // Only initialize if variations form exists
