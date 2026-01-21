@@ -1,4 +1,3 @@
-<!-- Overwriting the file -->
 <?php get_header(); ?>
 
 <main id="primary" class="site-main py-20 px-6">

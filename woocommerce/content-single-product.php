@@ -9,6 +9,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 global $product;
 
+// Ensure product context exists to avoid fatal errors when Woo globals are missing
+if ( empty( $product ) || ! $product instanceof WC_Product ) {
+    $product = wc_get_product( get_the_ID() );
+}
+
+if ( ! $product ) {
+    return;
+}
+
 do_action( 'woocommerce_before_single_product' );
 
 if ( post_password_required() ) {

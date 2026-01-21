@@ -1,15 +1,45 @@
-<?php get_header(); ?>
+<?php
+/**
+ * The Template for displaying product archives, including the main shop page which is a post type archive
+ *
+ * @package Vibe_Woo
+ */
 
-<main id="primary" class="site-main py-20 px-6">
-    <div class="container mx-auto">
-        <?php
-        if ( is_singular( 'product' ) ) {
-            wc_get_template_part( 'content', 'single-product' );
-        } else {
-            wc_get_template( 'archive-product.php' );
-        }
-        ?>
-    </div>
-</main>
+get_header( 'shop' );
 
-<?php get_footer(); ?>
+do_action( 'woocommerce_before_main_content' );
+
+if ( apply_filters( 'woocommerce_show_page_title', true ) ) {
+	?>
+	<h1 class="page-title"><?php woocommerce_page_title(); ?></h1>
+	<?php
+}
+
+do_action( 'woocommerce_archive_description' );
+
+if ( woocommerce_product_loop() ) {
+
+	do_action( 'woocommerce_before_shop_loop' );
+
+	woocommerce_product_loop_start();
+
+	if ( wc_get_loop_prop( 'total' ) ) {
+		while ( have_posts() ) {
+			the_post();
+
+			do_action( 'woocommerce_shop_loop' );
+
+			wc_get_template_part( 'content', 'product' );
+		}
+	}
+
+	woocommerce_product_loop_end();
+
+	do_action( 'woocommerce_after_shop_loop' );
+} else {
+	do_action( 'woocommerce_no_products_found' );
+}
+
+do_action( 'woocommerce_after_main_content' );
+
+get_footer( 'shop' );

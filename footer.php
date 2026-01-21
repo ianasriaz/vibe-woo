@@ -1,4 +1,3 @@
-<!-- Overwriting the file -->
     <footer id="colophon" class="site-footer py-12 px-6 bg-black text-white mt-20">
         <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
             <div class="footer-info">
