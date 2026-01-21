@@ -117,21 +117,111 @@ add_filter( 'wc_add_to_cart_message_html', '__return_false' );
 
 /**
  * Auto-create WooCommerce pages if they don't exist.
- * Runs once on theme activation.
+ * Can be triggered manually via admin.
  */
 function vibe_woo_create_pages() {
-	// Only run if WooCommerce is active and pages haven't been created yet
-	if ( ! class_exists( 'WooCommerce' ) || get_option( 'vibe_woo_pages_created' ) ) {
+	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
 	}
 
-	// Install default WooCommerce pages using WooCommerce's own function
-	if ( function_exists( 'WC_Install' ) ) {
-		WC_Install::create_pages();
-		update_option( 'vibe_woo_pages_created', '1' );
+	// Define pages to create
+	$pages = array(
+		'shop' => array(
+			'name'    => 'shop',
+			'title'   => 'Shop',
+			'content' => ''
+		),
+		'cart' => array(
+			'name'    => 'cart',
+			'title'   => 'Cart',
+			'content' => '[woocommerce_cart]'
+		),
+		'checkout' => array(
+			'name'    => 'checkout',
+			'title'   => 'Checkout',
+			'content' => '[woocommerce_checkout]'
+		),
+		'myaccount' => array(
+			'name'    => 'my-account',
+			'title'   => 'My Account',
+			'content' => '[woocommerce_my_account]'
+		)
+	);
+
+	foreach ( $pages as $key => $page ) {
+		$page_id = get_option( 'woocommerce_' . $key . '_page_id' );
+		
+		// Check if page exists and is published
+		if ( ! $page_id || get_post_status( $page_id ) !== 'publish' ) {
+			// Create the page
+			$page_data = array(
+				'post_status'    => 'publish',
+				'post_type'      => 'page',
+				'post_author'    => 1,
+				'post_name'      => $page['name'],
+				'post_title'     => $page['title'],
+				'post_content'   => $page['content'],
+				'comment_status' => 'closed'
+			);
+			
+			$page_id = wp_insert_post( $page_data );
+			
+			if ( $page_id ) {
+				update_option( 'woocommerce_' . $key . '_page_id', $page_id );
+			}
+		}
 	}
 }
 add_action( 'after_switch_theme', 'vibe_woo_create_pages' );
+
+// Add admin notice with button to create pages manually
+add_action( 'admin_notices', 'vibe_woo_admin_notice_missing_pages' );
+function vibe_woo_admin_notice_missing_pages() {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+	
+	// Check if cart or checkout page is missing
+	$cart_page_id = get_option( 'woocommerce_cart_page_id' );
+	$checkout_page_id = get_option( 'woocommerce_checkout_page_id' );
+	
+	if ( ! $cart_page_id || get_post_status( $cart_page_id ) !== 'publish' || 
+	     ! $checkout_page_id || get_post_status( $checkout_page_id ) !== 'publish' ) {
+		?>
+		<div class="notice notice-warning is-dismissible">
+			<p><strong>WooCommerce Pages Missing!</strong> Click the button below to create Cart and Checkout pages.</p>
+			<p>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=vibe-create-wc-pages' ) ); ?>" class="button button-primary">Create WooCommerce Pages</a>
+			</p>
+		</div>
+		<?php
+	}
+}
+
+// Add admin page to create WooCommerce pages
+add_action( 'admin_menu', 'vibe_woo_add_admin_page' );
+function vibe_woo_add_admin_page() {
+	add_submenu_page(
+		null,
+		'Create WooCommerce Pages',
+		'Create WooCommerce Pages',
+		'manage_options',
+		'vibe-create-wc-pages',
+		'vibe_woo_create_pages_callback'
+	);
+}
+
+function vibe_woo_create_pages_callback() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	
+	vibe_woo_create_pages();
+	flush_rewrite_rules();
+	
+	wp_redirect( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=page_setup' ) );
+	exit;
+}
 
 /**
  * Ensure WooCommerce endpoints are flushed on theme activation
@@ -293,61 +383,114 @@ function vibe_woo_header_interactions() {
                 // Only initialize if variations form exists
                 if ($('form.variations_form').length) {
                     $('form.variations_form').wc_variation_form();
+                    
+                    // Convert select dropdowns to radio buttons
+                    $('.variations select').each(function() {
+                        const $select = $(this);
+                        const $row = $select.closest('tr');
+                        const attributeName = $select.attr('name');
+                        const $valueCell = $row.find('td.value');
+                        
+                        if (!$valueCell.find('input[type="radio"]').length) {
+                            // Create radio buttons container
+                            const $radioContainer = $('<div class="radio-swatches"></div>');
+                            
+                            // Get all options except the placeholder
+                            $select.find('option').each(function() {
+                                const $option = $(this);
+                                const value = $option.val();
+                                const text = $option.text();
+                                
+                                if (value) { // Skip empty placeholder option
+                                    const radioId = attributeName + '_' + value.replace(/[^a-zA-Z0-9]/g, '_');
+                                    const $radio = $('<input type="radio" name="' + attributeName + '" value="' + value + '" id="' + radioId + '">');
+                                    const $label = $('<label for="' + radioId + '">' + text + '</label>');
+                                    
+                                    // Check if this option is selected
+                                    if ($option.is(':selected')) {
+                                        $radio.prop('checked', true);
+                                    }
+                                    
+                                    $radioContainer.append($radio).append($label);
+                                }
+                            });
+                            
+                            // Insert radio buttons before select
+                            $select.before($radioContainer);
+                            
+                            // Handle radio button changes
+                            $radioContainer.find('input[type="radio"]').on('change', function() {
+                                const selectedValue = $(this).val();
+                                $select.val(selectedValue).trigger('change');
+                            });
+                            
+                            // Handle select changes (from WooCommerce variation logic)
+                            $select.on('change', function() {
+                                const selectedValue = $(this).val();
+                                $radioContainer.find('input[type="radio"][value="' + selectedValue + '"]').prop('checked', true);
+                            });
+                        }
+                    });
                 }
             });
         }
 
         // Buy Now functionality
         window.buyNow = function(productId) {
-            const form = document.querySelector('.single-product form.cart, .single-product form.variations_form');
-            if (!form) {
-                console.error('Cart form not found');
+            if (typeof jQuery === 'undefined') {
+                alert('jQuery is required');
+                return;
+            }
+
+            const $ = jQuery;
+            const form = $('.single-product form.cart, .single-product form.variations_form').first();
+            
+            if (!form.length) {
+                alert('Product form not found');
                 return;
             }
 
             // For variable products, check if variation is selected
-            if (form.classList.contains('variations_form')) {
-                const variationId = form.querySelector('input[name="variation_id"]');
-                if (!variationId || !variationId.value) {
-                    alert('Please select product options before proceeding');
+            if (form.hasClass('variations_form')) {
+                const variationId = form.find('input[name="variation_id"]').val();
+                if (!variationId || variationId === '0' || variationId === 0) {
+                    alert('Please select product options');
                     return;
                 }
             }
 
-            // Get quantity
-            const qtyInput = form.querySelector('input[name="quantity"]');
-            const quantity = qtyInput ? qtyInput.value : 1;
+            // Get form data
+            const formData = new FormData(form[0]);
+            formData.set('add-to-cart', productId);
 
-            // Add to cart and redirect to checkout
-            if (typeof jQuery !== 'undefined' && typeof wc_add_to_cart_params !== 'undefined') {
-                const formData = new FormData(form);
-                formData.append('add-to-cart', productId);
+            // Disable button to prevent double clicks
+            const buyNowBtn = $('.single-product button[onclick*="buyNow"]');
+            buyNowBtn.prop('disabled', true).text('ADDING...');
 
-                jQuery.ajax({
-                    type: 'POST',
-                    url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart'),
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response && !response.error) {
-                            // Redirect to checkout
-                            window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
-                        } else {
-                            alert('Error adding product to cart');
-                        }
-                    },
-                    error: function() {
-                        alert('Error adding product to cart');
+            // Add to cart via AJAX
+            $.ajax({
+                type: 'POST',
+                url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart'),
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response && !response.error && response.fragments) {
+                        // Update cart fragments
+                        $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash]);
+                        
+                        // Redirect to checkout
+                        window.location.href = wc_add_to_cart_params.cart_url.replace('cart', 'checkout');
+                    } else {
+                        alert('Could not add product to cart. Please try again.');
+                        buyNowBtn.prop('disabled', false).text('BUY NOW');
                     }
-                });
-            } else {
-                // Fallback: submit form and redirect
-                form.submit();
-                setTimeout(function() {
-                    window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
-                }, 500);
-            }
+                },
+                error: function() {
+                    alert('Error adding product to cart. Please try again.');
+                    buyNowBtn.prop('disabled', false).text('BUY NOW');
+                }
+            });
         };
     });
     </script>
