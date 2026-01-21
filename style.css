@@ -201,41 +201,50 @@ Text Domain: vibe-woo
 }
 
 /* Single Product Attribute Swatches */
-.single-product .variations-form .variations {
-	margin-bottom: 0;
-}
-
-.single-product .variations-form .variations tr {
+.single-product .variations-fieldset {
 	border: none;
-	display: block;
-	margin-bottom: 0;
-}
-
-.single-product .variations-form .variations td {
+	margin: 0;
 	padding: 0;
+}
+
+/* Hide radio inputs */
+.variations input[type="radio"] {
+	display: none !important;
+}
+
+/* Swatch label styling */
+.variations label {
+	display: inline-block;
+}
+
+.attribute-group label {
 	display: block;
 }
 
-.single-product .variations-form .variations label {
-	display: block;
-	margin-bottom: 0;
+.attribute-group .flex label {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	border: 2px solid #d1d5db;
+	background: #fff;
+	color: #000;
+	font-weight: 700;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
 }
 
-/* Hide select dropdowns and variation elements */
-.single-product .variations-form .variations select {
-	display: none !important;
-}
-
-.woocommerce-variation-description {
-	display: none !important;
-}
-
-.woocommerce-variation-price {
-	display: none !important;
+.variations input[type="radio"]:checked + label {
+	border-color: #000;
+	background: #000;
+	color: #fff;
 }
 
 /* Quantity Input */
-.qty-input {
+.qty-input,
+.quantity input.qty {
 	width: 80px;
 	padding: 0.5rem;
 	border: 2px solid #d1d5db;
@@ -245,7 +254,8 @@ Text Domain: vibe-woo
 	transition: border-color 0.2s ease;
 }
 
-.qty-input:focus {
+.qty-input:focus,
+.quantity input.qty:focus {
 	outline: none;
 	border-color: #000;
 }
