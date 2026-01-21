@@ -158,6 +158,8 @@ function vibe_woo_create_pages() {
 add_action( 'after_setup_theme', 'vibe_woo_create_pages' );
 
 /**
+ * Lightweight header interactions (mobile nav + search modal + cart drawer).
+ */
 add_action( 'wp_footer', 'vibe_woo_header_interactions', 30 );
 function vibe_woo_header_interactions() {
     if ( ! class_exists( 'WooCommerce' ) ) {
