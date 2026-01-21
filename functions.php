@@ -301,6 +301,30 @@ function vibe_woo_header_interactions() {
             jQuery(document.body).on('added_to_cart', function () {
                 openCart();
             });
+
+            // Initialize WooCommerce variations
+            jQuery(document).ready(function($) {
+                if ($('.variations_form').length > 0) {
+                    $('form.variations_form').each(function() {
+                        $(this).wc_variation_form();
+                    });
+                }
+
+                // Handle radio button changes for custom swatches
+                $('.attribute-radio').on('change', function() {
+                    const $form = $(this).closest('form.variations_form');
+                    const formData = {};
+                    
+                    $form.find('.attribute-radio:checked').each(function() {
+                        const attrName = $(this).data('attribute_name');
+                        const attrValue = $(this).val();
+                        formData['attribute_' + attrName.replace('pa_', '')] = attrValue;
+                    });
+
+                    // Trigger variation change
+                    $form.find('.variations').trigger('change');
+                });
+            });
         }
 
         // Buy Now functionality
