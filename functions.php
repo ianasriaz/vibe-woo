@@ -302,6 +302,35 @@ function vibe_woo_header_interactions() {
                 openCart();
             });
         }
+
+        // Buy Now functionality
+        window.buyNow = function(productId) {
+            // Get the form on the page
+            const form = document.querySelector('.single-product form.cart');
+            if (form) {
+                // Create a hidden submit button and trigger it
+                const addToCartBtn = form.querySelector('[name="add-to-cart"]');
+                if (addToCartBtn) {
+                    // Add a temporary redirect after add-to-cart
+                    const tempAttribute = form.getAttribute('data-redirect-to-checkout');
+                    form.setAttribute('data-redirect-to-checkout', 'true');
+                    addToCartBtn.click();
+                    
+                    // After a short delay, redirect to checkout
+                    setTimeout(function() {
+                        const checkoutUrl = document.querySelector('a[href*="/checkout"]');
+                        if (checkoutUrl) {
+                            window.location.href = checkoutUrl.href;
+                        } else {
+                            // Fallback to WooCommerce checkout URL
+                            const baseUrl = window.location.origin;
+                            const pathArray = window.location.pathname.split('/');
+                            window.location.href = baseUrl + '/?p=checkout' || baseUrl + '/checkout/';
+                        }
+                    }, 500);
+                }
+            }
+        };
     });
     </script>
     <?php
