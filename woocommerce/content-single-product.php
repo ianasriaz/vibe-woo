@@ -90,16 +90,24 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
                     $attributes = $product->get_variation_attributes();
                     foreach ( $attributes as $attribute_name => $options ) {
                         $attribute_label = wc_attribute_label( $attribute_name );
+                        $attribute_key = sanitize_title( $attribute_name );
                         ?>
-                        <div class="space-y-3">
-                            <label class="text-xs font-bold uppercase tracking-widest"><?php echo esc_html( $attribute_label ); ?></label>
-                            <div class="flex flex-wrap gap-3">
+                        <div>
+                            <div class="text-xs font-bold uppercase tracking-widest mb-3"><?php echo esc_html( $attribute_label ); ?></div>
+                            <div class="flex flex-wrap gap-2">
                                 <?php foreach ( $options as $option ) : ?>
-                                    <label class="relative cursor-pointer">
-                                        <input type="radio" name="attribute_<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>" value="<?php echo esc_attr( $option ); ?>" class="swatch-input" />
-                                        <span class="swatch-label">
-                                            <?php echo esc_html( $option ); ?>
-                                        </span>
+                                    <input 
+                                        type="radio" 
+                                        name="attribute_<?php echo esc_attr( $attribute_key ); ?>" 
+                                        value="<?php echo esc_attr( $option ); ?>" 
+                                        id="attr_<?php echo esc_attr( $attribute_key ); ?>_<?php echo esc_attr( sanitize_title( $option ) ); ?>"
+                                        class="hidden peer/swatch"
+                                    />
+                                    <label 
+                                        for="attr_<?php echo esc_attr( $attribute_key ); ?>_<?php echo esc_attr( sanitize_title( $option ) ); ?>"
+                                        class="px-4 py-2 border-2 border-gray-300 text-sm font-bold uppercase tracking-wide cursor-pointer transition-all peer-checked/swatch:border-black peer-checked/swatch:bg-black peer-checked/swatch:text-white"
+                                    >
+                                        <?php echo esc_html( $option ); ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
@@ -115,16 +123,16 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
                 <form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>" method="post" enctype="multipart/form-data">
                     <?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
 
-                    <div class="flex gap-3 items-center mb-4">
-                        <label for="qty-<?php echo esc_attr( $product->get_id() ); ?>" class="text-xs font-bold uppercase tracking-widest whitespace-nowrap">Qty:</label>
-                        <input type="number" id="qty-<?php echo esc_attr( $product->get_id() ); ?>" name="quantity" value="1" min="1" max="<?php echo esc_attr( $product->get_max_purchase_quantity() > 0 ? $product->get_max_purchase_quantity() : '' ); ?>" class="qty-input" />
+                    <div class="flex gap-4 items-center mb-6">
+                        <span class="text-xs font-bold uppercase tracking-widest">QTY:</span>
+                        <input type="number" name="quantity" value="1" min="1" max="<?php echo esc_attr( $product->get_max_purchase_quantity() > 0 ? $product->get_max_purchase_quantity() : '' ); ?>" class="qty-input" />
                     </div>
 
                     <?php if ( ! $product->is_type( 'variable' ) ) : ?>
                         <input type="hidden" name="product_id" value="<?php echo esc_attr( $product->get_id() ); ?>" />
                     <?php endif; ?>
 
-                    <button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" class="single-add-to-cart-btn">
+                    <button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" class="w-full py-3 bg-black text-white font-bold uppercase tracking-widest text-sm transition-all hover:bg-gray-900 mb-3">
                         ADD TO CART
                     </button>
 
@@ -132,13 +140,13 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
                 </form>
 
                 <!-- Buy Now Button -->
-                <button type="button" class="buy-now-btn" onclick="buyNow(<?php echo esc_attr( $product->get_id() ); ?>)">
+                <button type="button" class="w-full py-3 border-2 border-black bg-white text-black font-bold uppercase tracking-widest text-sm transition-all hover:bg-black hover:text-white" onclick="buyNow(<?php echo esc_attr( $product->get_id() ); ?>)">
                     BUY NOW
                 </button>
 
                 <!-- Size Chart Link -->
-                <div class="text-right">
-                    <a href="#size-chart" class="text-xs font-semibold uppercase tracking-wide hover:text-gray-600 transition-colors">Size chart →</a>
+                <div class="text-right pt-2">
+                    <a href="#size-chart" class="text-xs font-semibold uppercase tracking-wide hover:opacity-60 transition-opacity">Size chart →</a>
                 </div>
             </div>
 

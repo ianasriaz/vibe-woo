@@ -219,14 +219,9 @@ Text Domain: vibe-woo
 .single-product .variations-form .variations label {
 	display: block;
 	margin-bottom: 0;
-	font-size: 0.75rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	margin-bottom: 0.75rem;
 }
 
-/* Hide select dropdowns */
+/* Hide select dropdowns and variation elements */
 .single-product .variations-form .variations select {
 	display: none !important;
 }
@@ -237,39 +232,6 @@ Text Domain: vibe-woo
 
 .woocommerce-variation-price {
 	display: none !important;
-}
-
-.woocommerce-available-variation {
-	display: none !important;
-}
-
-/* Custom Radio Swatch Buttons */
-.swatch-input {
-	display: none;
-}
-
-.swatch-label {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0.5rem 1rem;
-	min-width: 50px;
-	border: 2px solid #d1d5db;
-	background: #fff;
-	color: #000;
-	font-weight: 700;
-	font-size: 0.75rem;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	white-space: nowrap;
-}
-
-.swatch-input:checked + .swatch-label {
-	border-color: #000;
-	background: #000;
-	color: #fff;
 }
 
 /* Quantity Input */
@@ -286,45 +248,4 @@ Text Domain: vibe-woo
 .qty-input:focus {
 	outline: none;
 	border-color: #000;
-}
-
-/* Add to Cart Button */
-.single-add-to-cart-btn {
-	display: block;
-	width: 100%;
-	padding: 1rem;
-	background: #000;
-	color: #fff;
-	border: none;
-	font-size: 0.75rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	cursor: pointer;
-	transition: background 0.2s ease;
-}
-
-.single-add-to-cart-btn:hover {
-	background: #333;
-}
-
-/* Buy Now Button */
-.buy-now-btn {
-	display: block;
-	width: 100%;
-	padding: 1rem;
-	border: 2px solid #000;
-	background: #fff;
-	color: #000;
-	font-size: 0.75rem;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.buy-now-btn:hover {
-	background: #000;
-	color: #fff;
 }
