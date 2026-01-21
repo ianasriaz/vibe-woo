@@ -116,89 +116,32 @@ function vibe_woo_cart_fragments( $fragments ) {
 add_filter( 'wc_add_to_cart_message_html', '__return_false' );
 
 /**
- * Auto-create or update WooCommerce pages with shortcodes on theme activation.
+ * Auto-create WooCommerce pages if they don't exist.
+ * Runs once on theme activation.
  */
 function vibe_woo_create_pages() {
-	if ( class_exists( 'WooCommerce' ) ) {
-		$pages = array(
-			'shop'      => '[woocommerce_shop]',
-			'cart'      => '[woocommerce_cart]',
-			'checkout'  => '[woocommerce_checkout]',
-			'my-account' => '[woocommerce_my_account]',
-		);
-
-		foreach ( $pages as $page_type => $shortcode ) {
-			$page_id = wc_get_page_id( $page_type );
-			
-			if ( ! $page_id || $page_id < 1 ) {
-				// Page doesn't exist, create it
-				$page = array(
-					'post_title'   => ucfirst( str_replace( '-', ' ', $page_type ) ),
-					'post_content' => $shortcode,
-					'post_status'  => 'publish',
-					'post_type'    => 'page',
-				);
-				$new_page_id = wp_insert_post( $page );
-				
-				// Update WooCommerce setting
-				update_option( 'woocommerce_' . $page_type . '_page_id', $new_page_id );
-			} else {
-				// Page exists, ensure it has the shortcode
-				$page = get_post( $page_id );
-				if ( $page && strpos( $page->post_content, $shortcode ) === false ) {
-					wp_update_post( array(
-						'ID'           => $page_id,
-						'post_content' => $shortcode,
-					) );
-				}
-			}
-		}
-	}
-}
-add_action( 'after_setup_theme', 'vibe_woo_create_pages' );
-
-/**
- * Redirect to checkout on "Buy Now" button click
- */
-add_action( 'wp_ajax_vibe_buy_now', 'vibe_buy_now_redirect' );
-add_action( 'wp_ajax_nopriv_vibe_buy_now', 'vibe_buy_now_redirect' );
-function vibe_buy_now_redirect() {
-	if ( isset( $_POST['product_id'] ) && isset( $_POST['quantity'] ) ) {
-		$product_id = absint( $_POST['product_id'] );
-		$quantity   = absint( $_POST['quantity'] );
-		
-		// Add product to cart
-		WC()->cart->add_to_cart( $product_id, $quantity );
-		
-		// Return checkout URL
-		wp_send_json_success( array(
-			'redirect' => wc_get_checkout_url(),
-		) );
-	}
-	wp_send_json_error();
-}
-
-/**
- * Ensure cart and checkout pages are properly redirected
- */
-add_action( 'template_redirect', 'vibe_woo_check_cart_checkout_pages' );
-function vibe_woo_check_cart_checkout_pages() {
-	if ( ! class_exists( 'WooCommerce' ) ) {
+	// Only run if WooCommerce is active and pages haven't been created yet
+	if ( ! class_exists( 'WooCommerce' ) || get_option( 'vibe_woo_pages_created' ) ) {
 		return;
 	}
-	
-	// Redirect to cart if accessing cart page
-	if ( is_page( 'cart' ) && ! is_cart() ) {
-		wp_safe_redirect( wc_get_cart_url() );
-		exit;
-	}
-	
-	// Redirect to checkout if accessing checkout page
-	if ( is_page( 'checkout' ) && ! is_checkout() ) {
-		wp_safe_redirect( wc_get_checkout_url() );
-		exit;
+
+	// Install default WooCommerce pages using WooCommerce's own function
+	if ( function_exists( 'WC_Install' ) ) {
+		WC_Install::create_pages();
+		update_option( 'vibe_woo_pages_created', '1' );
 	}
 }
+add_action( 'after_switch_theme', 'vibe_woo_create_pages' );
+
+/**
+ * Ensure WooCommerce endpoints are flushed on theme activation
+ */
+function vibe_woo_flush_rewrite_rules() {
+	if ( class_exists( 'WooCommerce' ) ) {
+		flush_rewrite_rules();
+	}
+}
+add_action( 'after_switch_theme', 'vibe_woo_flush_rewrite_rules' );
 
 /**
  * Lightweight header interactions (mobile nav + search modal + cart drawer).
