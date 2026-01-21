@@ -85,19 +85,19 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
 
             <!-- Variations/Attributes -->
             <?php if ( $product->is_type( 'variable' ) ) : ?>
-                <div class="space-y-4">
+                <div class="space-y-6 border-t border-b border-gray-200 py-6">
                     <?php
                     $attributes = $product->get_variation_attributes();
                     foreach ( $attributes as $attribute_name => $options ) {
                         $attribute_label = wc_attribute_label( $attribute_name );
                         ?>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold uppercase tracking-wide"><?php echo esc_html( $attribute_label ); ?></label>
-                            <div class="flex flex-wrap gap-2">
+                        <div class="space-y-3">
+                            <label class="text-xs font-bold uppercase tracking-widest"><?php echo esc_html( $attribute_label ); ?></label>
+                            <div class="flex flex-wrap gap-3">
                                 <?php foreach ( $options as $option ) : ?>
-                                    <label class="relative">
-                                        <input type="radio" name="attribute_<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>" value="<?php echo esc_attr( $option ); ?>" class="sr-only peer" />
-                                        <span class="block px-4 py-2 border-2 border-gray-300 cursor-pointer text-sm font-semibold uppercase tracking-wide peer-checked:border-black peer-checked:bg-black peer-checked:text-white transition-all">
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="attribute_<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>" value="<?php echo esc_attr( $option ); ?>" class="swatch-input" />
+                                        <span class="swatch-label">
                                             <?php echo esc_html( $option ); ?>
                                         </span>
                                     </label>
@@ -110,19 +110,38 @@ $rating_html       = wc_get_rating_html( $product->get_average_rating(), $produc
                 </div>
             <?php endif; ?>
 
-            <!-- Add to Cart -->
-            <div class="pt-6 border-t border-gray-200 space-y-4">
-                <?php woocommerce_template_single_add_to_cart(); ?>
+            <!-- Quantity & Add to Cart -->
+            <div class="space-y-4 pt-6">
+                <form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>" method="post" enctype="multipart/form-data">
+                    <?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
 
-                <!-- WhatsApp & Size Chart -->
-                <div class="flex items-center justify-between gap-4 text-sm">
-                    <a href="https://wa.me/?text=Hi%20I%20am%20interested%20in%20<?php echo esc_attr( urlencode( $product->get_name() ) ); ?>" target="_blank" rel="noopener" class="flex items-center gap-2 px-4 py-3 border-2 border-green-500 text-green-600 font-semibold uppercase tracking-wide hover:bg-green-50 transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-9.746 9.798c0 2.734.732 5.41 2.124 7.738L3.505 21.952l8.126-2.135a9.847 9.847 0 004.746 1.194h.004c5.411 0 9.746-4.335 9.746-9.746 0-2.605-.635-5.061-1.746-7.24A9.753 9.753 0 0011.051 6.979"/>
-                        </svg>
-                        WhatsApp
-                    </a>
-                    <a href="#size-chart" class="text-gray-700 hover:text-black font-semibold underline">Size chart</a>
+                    <div class="flex gap-3 items-center mb-4">
+                        <label for="qty-<?php echo esc_attr( $product->get_id() ); ?>" class="text-xs font-bold uppercase tracking-widest whitespace-nowrap">Qty:</label>
+                        <input type="number" id="qty-<?php echo esc_attr( $product->get_id() ); ?>" name="quantity" value="1" min="1" max="<?php echo esc_attr( $product->get_max_purchase_quantity() > 0 ? $product->get_max_purchase_quantity() : '' ); ?>" class="qty-input" />
+                    </div>
+
+                    <?php if ( ! $product->is_type( 'variable' ) ) : ?>
+                        <input type="hidden" name="product_id" value="<?php echo esc_attr( $product->get_id() ); ?>" />
+                    <?php endif; ?>
+
+                    <button type="submit" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" class="single-add-to-cart-btn">
+                        ADD TO CART
+                    </button>
+
+                    <?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
+                </form>
+
+                <!-- WhatsApp Button -->
+                <a href="https://wa.me/?text=Hi%20I%20am%20interested%20in%20<?php echo esc_attr( urlencode( $product->get_name() ) ); ?>" target="_blank" rel="noopener" class="whatsapp-btn">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-9.746 9.798c0 2.734.732 5.41 2.124 7.738L3.505 21.952l8.126-2.135a9.847 9.847 0 004.746 1.194h.004c5.411 0 9.746-4.335 9.746-9.746 0-2.605-.635-5.061-1.746-7.24A9.753 9.753 0 0011.051 6.979"/>
+                    </svg>
+                    WHATSAPP
+                </a>
+
+                <!-- Size Chart Link -->
+                <div class="text-right">
+                    <a href="#size-chart" class="text-xs font-semibold uppercase tracking-wide hover:text-gray-600 transition-colors">Size chart →</a>
                 </div>
             </div>
 

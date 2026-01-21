@@ -202,55 +202,62 @@ Text Domain: vibe-woo
 
 /* Single Product Attribute Swatches */
 .single-product .variations-form .variations {
-	margin-bottom: 1.5rem;
+	margin-bottom: 0;
 }
 
 .single-product .variations-form .variations tr {
 	border: none;
-	display: flex;
-	gap: 1rem;
-	align-items: center;
-	margin-bottom: 1rem;
+	display: block;
+	margin-bottom: 0;
 }
 
 .single-product .variations-form .variations td {
 	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-	align-items: center;
-	flex: 1;
+	display: block;
 }
 
 .single-product .variations-form .variations label {
+	display: block;
+	margin-bottom: 0;
 	font-size: 0.75rem;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
-	margin: 0;
-	width: 100%;
-	display: block;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.75rem;
 }
 
+/* Hide select dropdowns */
 .single-product .variations-form .variations select {
 	display: none !important;
 }
 
-/* Radio Button Attribute Styling */
-.single-product input[type="radio"][name^="attribute_"] {
+.woocommerce-variation-description {
+	display: none !important;
+}
+
+.woocommerce-variation-price {
+	display: none !important;
+}
+
+.woocommerce-available-variation {
+	display: none !important;
+}
+
+/* Custom Radio Swatch Buttons */
+.swatch-input {
 	display: none;
 }
 
-.single-product input[type="radio"][name^="attribute_"] + span {
+.swatch-label {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0.5rem 1rem;
+	min-width: 50px;
 	border: 2px solid #d1d5db;
 	background: #fff;
 	color: #000;
-	font-weight: 600;
+	font-weight: 700;
 	font-size: 0.75rem;
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
@@ -259,8 +266,69 @@ Text Domain: vibe-woo
 	white-space: nowrap;
 }
 
-.single-product input[type="radio"][name^="attribute_"]:checked + span {
+.swatch-input:checked + .swatch-label {
 	border-color: #000;
 	background: #000;
+	color: #fff;
+}
+
+/* Quantity Input */
+.qty-input {
+	width: 80px;
+	padding: 0.5rem;
+	border: 2px solid #d1d5db;
+	font-size: 0.875rem;
+	font-weight: 600;
+	text-align: center;
+	transition: border-color 0.2s ease;
+}
+
+.qty-input:focus {
+	outline: none;
+	border-color: #000;
+}
+
+/* Add to Cart Button */
+.single-add-to-cart-btn {
+	display: block;
+	width: 100%;
+	padding: 1rem;
+	background: #000;
+	color: #fff;
+	border: none;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.single-add-to-cart-btn:hover {
+	background: #333;
+}
+
+/* WhatsApp Button */
+.whatsapp-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 1rem;
+	border: 2px solid #10b981;
+	background: #fff;
+	color: #10b981;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+	background: #10b981;
 	color: #fff;
 }
