@@ -158,6 +158,49 @@ function vibe_woo_create_pages() {
 add_action( 'after_setup_theme', 'vibe_woo_create_pages' );
 
 /**
+ * Redirect to checkout on "Buy Now" button click
+ */
+add_action( 'wp_ajax_vibe_buy_now', 'vibe_buy_now_redirect' );
+add_action( 'wp_ajax_nopriv_vibe_buy_now', 'vibe_buy_now_redirect' );
+function vibe_buy_now_redirect() {
+	if ( isset( $_POST['product_id'] ) && isset( $_POST['quantity'] ) ) {
+		$product_id = absint( $_POST['product_id'] );
+		$quantity   = absint( $_POST['quantity'] );
+		
+		// Add product to cart
+		WC()->cart->add_to_cart( $product_id, $quantity );
+		
+		// Return checkout URL
+		wp_send_json_success( array(
+			'redirect' => wc_get_checkout_url(),
+		) );
+	}
+	wp_send_json_error();
+}
+
+/**
+ * Ensure cart and checkout pages are properly redirected
+ */
+add_action( 'template_redirect', 'vibe_woo_check_cart_checkout_pages' );
+function vibe_woo_check_cart_checkout_pages() {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
+	
+	// Redirect to cart if accessing cart page
+	if ( is_page( 'cart' ) && ! is_cart() ) {
+		wp_safe_redirect( wc_get_cart_url() );
+		exit;
+	}
+	
+	// Redirect to checkout if accessing checkout page
+	if ( is_page( 'checkout' ) && ! is_checkout() ) {
+		wp_safe_redirect( wc_get_checkout_url() );
+		exit;
+	}
+}
+
+/**
  * Lightweight header interactions (mobile nav + search modal + cart drawer).
  */
 add_action( 'wp_footer', 'vibe_woo_header_interactions', 30 );
@@ -313,30 +356,54 @@ function vibe_woo_header_interactions() {
 
         // Buy Now functionality
         window.buyNow = function(productId) {
-            // Get the form on the page
-            const form = document.querySelector('.single-product form.cart');
-            if (form) {
-                // Create a hidden submit button and trigger it
-                const addToCartBtn = form.querySelector('[name="add-to-cart"]');
-                if (addToCartBtn) {
-                    // Add a temporary redirect after add-to-cart
-                    const tempAttribute = form.getAttribute('data-redirect-to-checkout');
-                    form.setAttribute('data-redirect-to-checkout', 'true');
-                    addToCartBtn.click();
-                    
-                    // After a short delay, redirect to checkout
-                    setTimeout(function() {
-                        const checkoutUrl = document.querySelector('a[href*="/checkout"]');
-                        if (checkoutUrl) {
-                            window.location.href = checkoutUrl.href;
-                        } else {
-                            // Fallback to WooCommerce checkout URL
-                            const baseUrl = window.location.origin;
-                            const pathArray = window.location.pathname.split('/');
-                            window.location.href = baseUrl + '/?p=checkout' || baseUrl + '/checkout/';
-                        }
-                    }, 500);
+            const form = document.querySelector('.single-product form.cart, .single-product form.variations_form');
+            if (!form) {
+                console.error('Cart form not found');
+                return;
+            }
+
+            // For variable products, check if variation is selected
+            if (form.classList.contains('variations_form')) {
+                const variationId = form.querySelector('input[name="variation_id"]');
+                if (!variationId || !variationId.value) {
+                    alert('Please select product options before proceeding');
+                    return;
                 }
+            }
+
+            // Get quantity
+            const qtyInput = form.querySelector('input[name="quantity"]');
+            const quantity = qtyInput ? qtyInput.value : 1;
+
+            // Add to cart and redirect to checkout
+            if (typeof jQuery !== 'undefined' && typeof wc_add_to_cart_params !== 'undefined') {
+                const formData = new FormData(form);
+                formData.append('add-to-cart', productId);
+
+                jQuery.ajax({
+                    type: 'POST',
+                    url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response && !response.error) {
+                            // Redirect to checkout
+                            window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
+                        } else {
+                            alert('Error adding product to cart');
+                        }
+                    },
+                    error: function() {
+                        alert('Error adding product to cart');
+                    }
+                });
+            } else {
+                // Fallback: submit form and redirect
+                form.submit();
+                setTimeout(function() {
+                    window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
+                }, 500);
             }
         };
     });
