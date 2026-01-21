@@ -20,13 +20,11 @@ get_header( 'shop' );
 		<?php
 		if ( is_singular( 'product' ) ) {
 			wc_get_template_part( 'content', 'single-product' );
-		} elseif ( is_cart() ) {
-			woocommerce_content();
-		} elseif ( is_checkout() ) {
-			woocommerce_content();
-		} elseif ( is_account_page() ) {
-			woocommerce_content();
+		} elseif ( is_cart() || is_checkout() || is_account_page() ) {
+			// For cart, checkout, and account pages, render the page content (which contains shortcodes)
+			the_content();
 		} else {
+			// Shop/archive pages
 			wc_get_template( 'archive-product.php' );
 		}
 		?>
