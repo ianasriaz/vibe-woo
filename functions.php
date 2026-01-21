@@ -174,6 +174,18 @@ function vibe_woo_create_pages() {
 }
 add_action( 'after_switch_theme', 'vibe_woo_create_pages' );
 
+// Also create pages if WooCommerce is activated
+add_action( 'woocommerce_loaded', 'vibe_woo_ensure_pages_created' );
+function vibe_woo_ensure_pages_created() {
+	// Check if pages are missing
+	$cart_page_id = get_option( 'woocommerce_cart_page_id' );
+	$checkout_page_id = get_option( 'woocommerce_checkout_page_id' );
+	
+	if ( ! $cart_page_id || ! get_post( $cart_page_id ) || ! $checkout_page_id || ! get_post( $checkout_page_id ) ) {
+		vibe_woo_create_pages();
+	}
+}
+
 // Add admin notice with button to create pages manually
 add_action( 'admin_notices', 'vibe_woo_admin_notice_missing_pages' );
 function vibe_woo_admin_notice_missing_pages() {
@@ -514,8 +526,10 @@ function vibe_woo_header_interactions() {
                         // Update cart fragments
                         $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash]);
                         
-                        // Redirect to checkout
-                        window.location.href = wc_add_to_cart_params.cart_url.replace('cart', 'checkout');
+                        // Redirect to checkout using proper WooCommerce function
+                        setTimeout(function() {
+                            window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
+                        }, 500);
                     } else {
                         alert('Could not add product to cart. Please try again.');
                         buyNowBtn.prop('disabled', false).text('BUY NOW');
