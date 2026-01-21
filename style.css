@@ -21,20 +21,21 @@ Text Domain: vibe-woo
 .woocommerce input.button,
 .single_add_to_cart_button,
 .button {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
 	justify-content: center;
     gap: 0.5rem;
-    padding: 1rem 1.5rem;
+    padding: 0.875rem 1.5rem;
     background: var(--vibe-black);
     color: #fff;
     text-transform: uppercase;
     font-weight: 700;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
     border: none;
     transition: background 0.2s ease;
     cursor: pointer;
+    width: 100%;
 }
 
 .woocommerce a.button:hover,
@@ -197,4 +198,69 @@ Text Domain: vibe-woo
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
+}
+
+/* Single Product Attribute Swatches */
+.single-product .variations-form .variations {
+	margin-bottom: 1.5rem;
+}
+
+.single-product .variations-form .variations tr {
+	border: none;
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.single-product .variations-form .variations td {
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+	flex: 1;
+}
+
+.single-product .variations-form .variations label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	margin: 0;
+	width: 100%;
+	display: block;
+	margin-bottom: 0.5rem;
+}
+
+.single-product .variations-form .variations select {
+	display: none !important;
+}
+
+/* Radio Button Attribute Styling */
+.single-product input[type="radio"][name^="attribute_"] {
+	display: none;
+}
+
+.single-product input[type="radio"][name^="attribute_"] + span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 1rem;
+	border: 2px solid #d1d5db;
+	background: #fff;
+	color: #000;
+	font-weight: 600;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.single-product input[type="radio"][name^="attribute_"]:checked + span {
+	border-color: #000;
+	background: #000;
+	color: #fff;
 }
