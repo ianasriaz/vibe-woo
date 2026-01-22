@@ -474,7 +474,7 @@ function vibe_woo_header_interactions() {
             });
         }
 
-        // Buy Now functionality
+        // Buy Now functionality (redirect-based)
         window.buyNow = function(productId) {
             if (typeof jQuery === 'undefined') {
                 alert('jQuery is required');
@@ -482,56 +482,37 @@ function vibe_woo_header_interactions() {
             }
 
             const $ = jQuery;
-            const form = $('.single-product form.cart, .single-product form.variations_form').first();
-            
-            if (!form.length) {
+            const $form = $('.single-product form.cart, .single-product form.variations_form').first();
+            if (!$form.length) {
                 alert('Product form not found');
                 return;
             }
 
-            // For variable products, check if variation is selected
-            if (form.hasClass('variations_form')) {
-                const variationId = form.find('input[name="variation_id"]').val();
+            const qty = parseInt(($form.find('input.qty').val() || '1'), 10) || 1;
+            const baseUrl = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
+            const hasQuery = baseUrl.indexOf('?') !== -1;
+            const params = new URLSearchParams();
+            params.set('add-to-cart', productId);
+            params.set('quantity', qty);
+
+            if ($form.hasClass('variations_form')) {
+                const variationId = $form.find('input[name="variation_id"]').val();
                 if (!variationId || variationId === '0' || variationId === 0) {
                     alert('Please select product options');
                     return;
                 }
+                params.set('variation_id', variationId);
+                $form.find('select[name^="attribute_"]').each(function() {
+                    const name = this.name;
+                    const value = $(this).val();
+                    if (value) params.set(name, value);
+                });
             }
 
-            // Get form data
-            const formData = new FormData(form[0]);
-            formData.set('add-to-cart', productId);
-
-            // Disable button to prevent double clicks
             const buyNowBtn = $('.single-product button[onclick*="buyNow"]');
             buyNowBtn.prop('disabled', true).text('ADDING...');
 
-            // Add to cart via AJAX
-            $.ajax({
-                type: 'POST',
-                url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart'),
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response && !response.error && response.fragments) {
-                        // Update cart fragments
-                        $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash]);
-                        
-                        // Redirect to checkout using proper WooCommerce function
-                        setTimeout(function() {
-                            window.location.href = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
-                        }, 500);
-                    } else {
-                        alert('Could not add product to cart. Please try again.');
-                        buyNowBtn.prop('disabled', false).text('BUY NOW');
-                    }
-                },
-                error: function() {
-                    alert('Error adding product to cart. Please try again.');
-                    buyNowBtn.prop('disabled', false).text('BUY NOW');
-                }
-            });
+            window.location.href = baseUrl + (hasQuery ? '&' : '?') + params.toString();
         };
     });
     </script>
