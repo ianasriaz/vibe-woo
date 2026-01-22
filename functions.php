@@ -60,57 +60,56 @@ add_filter( 'woocommerce_enqueue_styles', '__return_empty_array' );
 add_filter( 'woocommerce_loop_add_to_cart_link', 'vibe_woo_add_to_cart_classes', 10, 2 );
 function vibe_woo_add_to_cart_classes( $html, $product ) {
     if ( false === strpos( $html, 'class="' ) ) {
-        // Buy Now functionality (redirect-based, no AJAX)
-        window.buyNow = function(productId) {
-            if (typeof jQuery === 'undefined') {
-                alert('jQuery is required');
-                return;
-            }
+        return $html;
+    }
 
-            const $ = jQuery;
-            const $form = $('.single-product form.cart, .single-product form.variations_form').first();
+    preg_match( '/class="([^"]*)"/', $html, $matches );
+    $existing_classes = isset( $matches[1] ) ? explode( ' ', $matches[1] ) : array();
+    $existing_classes = array_filter( array_map( 'trim', $existing_classes ) );
 
-            if (!$form.length) {
-                alert('Product form not found');
-                return;
-            }
+    $styled_classes = array_merge(
+        $existing_classes,
+        array(
+            'bg-black',
+            'text-white',
+            'px-6',
+            'py-3',
+            'uppercase',
+            'font-black',
+            'tracking-[0.22em]',
+            'hover:bg-gray-900',
+            'transition-all',
+            'duration-300',
+        )
+    );
 
-            // Quantity
-            const qty = parseInt(($form.find('input.qty').val() || '1'), 10) || 1;
+    $class_attribute = implode( ' ', array_unique( $styled_classes ) );
 
-            // Build checkout URL with add-to-cart params
-            const baseUrl = '<?php echo esc_url( wc_get_checkout_url() ); ?>';
-            const hasQuery = baseUrl.indexOf('?') !== -1;
-            const params = new URLSearchParams();
-            params.set('add-to-cart', productId);
-            params.set('quantity', qty);
+    return preg_replace( '/class="([^"]*)"/', 'class="' . esc_attr( $class_attribute ) . '"', $html );
+}
 
-            // Variable product handling
-            if ($form.hasClass('variations_form')) {
-                const variationId = $form.find('input[name="variation_id"]').val();
-                if (!variationId || variationId === '0' || variationId === 0) {
-                    alert('Please select product options');
-                    return;
-                }
-                params.set('variation_id', variationId);
+/**
+ * Keep header cart count and mini-cart in sync via fragments.
+ */
+add_filter( 'woocommerce_add_to_cart_fragments', 'vibe_woo_cart_fragments' );
+function vibe_woo_cart_fragments( $fragments ) {
+    if ( ! class_exists( 'WooCommerce' ) || ! WC()->cart ) {
+        return $fragments;
+    }
 
-                // Include selected attributes
-                $form.find('select[name^="attribute_"]').each(function() {
-                    const name = this.name;
-                    const value = $(this).val();
-                    if (value) {
-                        params.set(name, value);
-                    }
-                });
-            }
+    ob_start();
+    ?>
+    <span class="js-vibe-cart-count absolute -top-1 -right-1 flex items-center justify-center min-w-[1.25rem] h-5 px-1 bg-black text-white text-xs font-bold rounded-full"><?php echo esc_html( WC()->cart->get_cart_contents_count() ); ?></span>
+    <?php
+    $fragments['.js-vibe-cart-count'] = ob_get_clean();
 
-            // Disable button to prevent double clicks
-            const buyNowBtn = $('.single-product button[onclick*="buyNow"]');
-            buyNowBtn.prop('disabled', true).text('ADDING...');
+    ob_start();
+    woocommerce_mini_cart();
+    $fragments['#vibe-mini-cart-contents'] = ob_get_clean();
 
-            // Redirect
-            window.location.href = baseUrl + (hasQuery ? '&' : '?') + params.toString();
-        };
+    return $fragments;
+}
+
 function vibe_woo_create_pages() {
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		return;
